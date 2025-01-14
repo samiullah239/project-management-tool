@@ -5,7 +5,7 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #1e293b; /* Matches the dark background in the image */
+  background-color: white; /* Matches the dark background in the image */
   color: #e2e8f0; /* Light text color for better contrast */
 }
 .App-logo {

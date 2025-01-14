@@ -1,6 +1,6 @@
 // src/Components/Layout.js
 import React from 'react';
-import MySidebar from '../Roles/MasterAdmin/Sidebar';
+import MySidebar from './Sidebar';
 const Layout = ({ children }) => {
   return (
     <div className="">
