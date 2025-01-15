@@ -6,6 +6,7 @@ import Layout from "./Components/Layout"; // Import Layout
 import Dashboard from "./Roles/MasterAdmin/Dashboard";
 import Management from "./Roles/MasterAdmin/ProjectManagement";
 import Addemployee from "./Roles/MasterAdmin/AddEmployee";
+import Addproject from "./pages/Addproject";
 
 function App() {
   return (
@@ -13,9 +14,10 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginSignup />} />
         <Route path="/add-employee" element={<Addemployee />} />
+        <Route path="/add-project" element={<Addproject />} />
 
         <Route
-          path="/hr"
+          path="/hr/dashboard"
           element={
             <Layout>
               <Dashboard />
@@ -24,13 +26,14 @@ function App() {
         />
 
         <Route
-          path="/management"
+          path="/management/dashboard"
           element={
             <Layout>
               <Management />
             </Layout>
           }
         />
+        
       </Routes>
     </Router>
   );

@@ -57,7 +57,7 @@ const AddEmployee = () => {
     age: "",
     salary: 0,
     address: "",
-    status: "Active", // Default status
+    status: "", // Default status
   });
   const [imagePreviews, setImagePreviews] = useState([]); // Keep previews here
 

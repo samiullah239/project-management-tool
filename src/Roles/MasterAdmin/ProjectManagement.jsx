@@ -13,6 +13,7 @@ import {
 import ApexCharts from "react-apexcharts";
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 const Management = () => {
   const [chartOptions, setChartOptions] = useState({
     series: [35.1, 23.5, 2.4, 5.4],
@@ -97,10 +98,11 @@ const Management = () => {
 
       <div className="sm:ml-[19.5%] bg-gray-300 mt-2 rounded-2xl mr-4">
         <div className=" flex justify-end mr-3">
+          <Link to={'/add-project'}>
           <button className="bg-green-800 text-white px-4 py-2 rounded-3xl mr-2 mt-3 flex items-center hover:bg-green-900">
             <FaPlus className="mr-2" /> Add Project
           </button>
-
+          </Link>
           <button className="bg-white text-green-800 border-green-600 px-4 py-2 rounded-3xl mt-3 hover:bg-gray-400">
             Import Data
           </button>

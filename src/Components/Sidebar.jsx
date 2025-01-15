@@ -1,9 +1,23 @@
 import { MdOutlineHome } from "react-icons/md";
 import { GoProjectSymlink } from "react-icons/go";
 import { HiShoppingBag } from "react-icons/hi"; // Sales & Permissions icon
+import { useState } from "react";
+import { TbLayoutDashboardFilled } from "react-icons/tb";
 
 // Register necessary chart.js components
 const MySidebar = () => {
+  const [showHROptions, setShowHROptions] = useState(false); // State to toggle HR options
+  const [shiowManagementOption, setShowManagementOption] = useState(false);
+
+  const toggleManagementOption = () => {
+    setShowManagementOption(!shiowManagementOption);
+  };
+
+  // Toggle HR options visibility
+  const toggleHROptions = () => {
+    setShowHROptions(!showHROptions);
+  };
+
   return (
     <div className="mb-4">
       {/* Toggle Button for Sidebar (Mobile) */}
@@ -52,21 +66,53 @@ const MySidebar = () => {
           <ul className="space-y-2 font-medium">
             <li>
               <a
-                href="/hr"
-                className="flex items-center p-2 text-black rounded-lg dark:text-white hover:bg-gray-400 dark:hover:bg-gray-700 group"
+                onClick={toggleHROptions} // Toggle on click
+                className="flex items-center p-2 text-black rounded-lg dark:text-white hover:bg-gray-400 dark:hover:bg-gray-700 group cursor-pointer"
               >
                 <MdOutlineHome className="w-5 h-5 text-black group-hover:text-gray-900 dark:group-hover:text-white" />
-                <span className="ms-3">HR</span>
+                <span className="ms-3 cursor-pointer">HR</span>
               </a>
+
+              {/* Dropdown options */}
+              {showHROptions && (
+                <ul className="ml-4 space-y-2 mt-2">
+                  <li>
+                    <a
+                      href="/hr/dashboard"
+                      className="flex items-center p-2 text-black rounded-lg dark:text-white hover:bg-gray-400 dark:hover:bg-gray-700"
+                    >
+                      <TbLayoutDashboardFilled className="w-5 h-5 text-black group-hover:text-gray-900 dark:group-hover:text-white" />
+
+                      <span className="ms-3">Dashboard</span>
+                    </a>
+                  </li>
+                  {/* You can add more options here */}
+                </ul>
+              )}
             </li>
             <li>
               <a
-                href="/management"
+                onClick={toggleManagementOption} // Toggle on click
                 className="flex items-center p-2 text-black rounded-lg dark:text-white hover:bg-gray-400 dark:hover:bg-gray-700 group"
               >
                 <GoProjectSymlink className="w-5 h-5 text-black group-hover:text-gray-900 dark:group-hover:text-white" />
-                <span className="ms-3">Project Management</span>
+                <span className="ms-3 cursor-pointer">Project Management</span>
               </a>
+              {shiowManagementOption && (
+                <ul className="ml-4 space-y-2 mt-2">
+                  <li>
+                    <a
+                      href="/management/dashboard"
+                      className="flex items-center p-2 text-black rounded-lg dark:text-white hover:bg-gray-400 dark:hover:bg-gray-700"
+                    >
+                      <TbLayoutDashboardFilled className="w-5 h-5 text-black group-hover:text-gray-900 dark:group-hover:text-white" />
+
+                      <span className="ms-3">Dashboard</span>
+                    </a>
+                  </li>
+                  {/* You can add more options here */}
+                </ul>
+              )}
             </li>
             <li>
               <a
