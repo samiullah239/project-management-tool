@@ -9,12 +9,46 @@ import {
   FaHouseUser,
   FaPlus,
   FaVideo,
+  FaUserFriends,
 } from "react-icons/fa";
-import ApexCharts from "react-apexcharts";
+import { Badge } from "flowbite-react"; // Import Badge from Flowbite
 
+import ApexCharts from "react-apexcharts";
+import { MdKeyboardDoubleArrowRight } from "react-icons/md";
+import { IoIosLink } from "react-icons/io";
+import { CgPlayButtonO } from "react-icons/cg";
+import { TbLoader } from "react-icons/tb";
+import { IoCalendarOutline } from "react-icons/io5";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css"; // Import the datepicker styles
 import { useState } from "react";
 import { Link } from "react-router-dom";
 const Management = () => {
+  const [selectedBadge, setSelectedBadge] = useState(""); // State for the selected badge
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedBadge2, setSelectedBadge2] = useState(""); // State for the selected badge
+  const [isDropdownOpen2, setDropdownOpen2] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(""); // Store the color of the selected badge
+
+  const handleBadgeClick = (badgeText) => {
+    setSelectedBadge(badgeText); // Set the selected badge
+    setDropdownOpen(false); // Close the dropdown after selection
+  };
+
+  const handleInputClick = () => {
+    setDropdownOpen(!isDropdownOpen); // Toggle dropdown visibility on input click
+  };
+
+  const handleBadgeClick2 = (badgeText, badgeColor) => {
+    setSelectedBadge2(badgeText); // Set the badge text
+    setSelectedColor(badgeColor); // Set the badge color
+    setDropdownOpen2(false); // Close the dropdown
+  };
+
+  const handleInputClicks = () => {
+    setDropdownOpen2(!isDropdownOpen2); // Toggle dropdown visibility
+  };
+
   const [chartOptions, setChartOptions] = useState({
     series: [35.1, 23.5, 2.4, 5.4],
     colors: ["#1C64F2", "#16BDCA", "#FDBA8C", "#E74694"],
@@ -89,7 +123,13 @@ const Management = () => {
   });
 
   // Handle the checkbox change
+  const [isVisible, setIsVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null); // Store the selected date
 
+  const [isSearch, setIsSearch] = useState("New Project");
+  const handleChange = (e) => {
+    setIsSearch(e.target.value); // Update the state when the input changes
+  };
   return (
     <div className="dashboard-content">
       <div className="px-3">
@@ -98,11 +138,357 @@ const Management = () => {
 
       <div className="sm:ml-[19.5%] bg-gray-300 mt-2 rounded-2xl mr-4">
         <div className=" flex justify-end mr-3">
-          <Link to={'/add-project'}>
-          <button className="bg-green-800 text-white px-4 py-2 rounded-3xl mr-2 mt-3 flex items-center hover:bg-green-900">
-            <FaPlus className="mr-2" /> Add Project
-          </button>
-          </Link>
+          <div>
+            <button
+              className="bg-green-800 text-white px-4 py-2 rounded-3xl mr-2 mt-3 flex items-center hover:bg-green-900"
+              onClick={() => setIsVisible(true)}
+            >
+              <FaPlus className="mr-2" /> Add Project
+            </button>
+
+            <div
+              className={`slide-page ${isVisible ? "slide-in" : ""}`}
+              style={{
+                position: "fixed",
+                top: 0,
+                right: isVisible ? "0" : "-50%",
+                width: "41%",
+                height: "100%",
+                backgroundColor: "white",
+                transition: "right 0.3s ease-in-out",
+                zIndex: 100,
+              }}
+            >
+              {/* Close/Minimize Option */}
+              <div className="p-4">
+                <button
+                  onClick={() => setIsVisible(false)}
+                  className="text-xl hover:bg-gray-300 border rounded"
+                >
+                  <MdKeyboardDoubleArrowRight />
+                </button>
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  value={isSearch} // Bind the input value to the state
+                  onChange={handleChange} // Update state when the user types
+                  className="p-2 text-black text-[1rem] font-[700] pl-8 bg-white-100 border border-white rounded-md focus:bg-white focus:border-white focus:outline-none"
+                />
+              </div>
+              <div
+                className="flex flex-col gap-6 overflow-y-auto max-h-[80vh]"
+                style={{
+                  scrollbarWidth: "thin", // For Firefox
+                  scrollbarColor: "#4A5568 #E2E8F0", // For Firefox (thumb color & track color)
+                }}
+              >
+                {" "}
+                {/* Enable vertical scroll with max-height */}
+                <div className="flex ml-9 gap-10">  
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {" "}
+                    {/* Align icon and text horizontally */}
+                    <IoIosLink className="text-gray-600 mr-2" />{" "}
+                    {/* Add margin to the right of the icon */}
+                    <span className="text-gray-600 ">store Url</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="empty"
+                    className=" text-black text-[1rem] pl-2 h-7 bg-white-100 border hover:bg-gray-300 border-white rounded-md focus:bg-white focus:border-white focus:outline-none cursor-pointer  focus:shadow-lg"
+                  />
+                </div>
+                <div className="flex ml-9 gap-10">
+                  {/* Icon and Text Section */}
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    <CgPlayButtonO className="text-gray-600 mr-2" />
+                    <span className="text-gray-600 text-[0.9rem]">
+                      Project By
+                    </span>
+                  </div>
+
+                  {/* Input with Badge */}
+                  <div className="relative w-[40%]">
+                    {/* Input field with badge inside */}
+                    <div
+                      className="flex items-center justify-between p-2 bg-white-100 border hover:bg-gray-300 border-white rounded-md cursor-pointer focus:outline-none focus:shadow-lg"
+                      onClick={handleInputClick}
+                    >
+                      {selectedBadge ? (
+                        // Display the selected badge inside the input
+                        <Badge
+                          color="info"
+                          className="text-xs bg-gray-700 rounded-2xl"
+                        >
+                          {selectedBadge}
+                        </Badge>
+                      ) : (
+                        <span className="text-gray-600 text-[1rem]">
+                          Select a project
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Dropdown with badges */}
+                    {isDropdownOpen && (
+                      <div className="absolute bg-white border rounded-md mt-2 w-full z-10 shadow-lg">
+                        <div
+                          onClick={() => handleBadgeClick("Tab On Tech")}
+                          className="p-2 hover:bg-gray-200 cursor-pointer"
+                        >
+                          <Badge className="bg-gray-700 rounded-2xl w-[55%]">
+                            Tab On Tech
+                          </Badge>
+                        </div>
+                        <div
+                          onClick={() => handleBadgeClick("The Smith")}
+                          className="p-2 hover:bg-gray-200 cursor-pointer"
+                        >
+                          <Badge
+                            color=""
+                            className="bg-gray-700 rounded-2xl w-[55%]"
+                          >
+                            The Smith
+                          </Badge>
+                        </div>
+                        <div
+                          onClick={() => handleBadgeClick("DropshipHub")}
+                          className="p-2 hover:bg-gray-200 cursor-pointer"
+                        >
+                          <Badge className="bg-gray-700 rounded-2xl w-[55%]">
+                            DropshipHub
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex ml-9 gap-10">
+                  {/* Icon and Text Section */}
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    <TbLoader  className="text-gray-600 mr-2" />
+                    <span className="text-gray-600 text-[0.9rem]">
+                      Status
+                    </span>
+                  </div>
+
+                  {/* Input with Badge */}
+                  <div className="relative w-[40%]">
+      {/* Input field with badge inside */}
+      <div
+        className="flex items-center justify-between p-2 bg-white-100 border hover:bg-gray-300 border-white rounded-md cursor-pointer focus:outline-none focus:shadow-lg"
+        onClick={handleInputClicks}
+      >
+        {selectedBadge2 ? (
+          // Display the selected badge inside the input with the selected color
+          <Badge color={selectedColor} className="text-xs rounded-2xl">
+            {selectedBadge2}
+          </Badge>
+        ) : (
+          <span className="text-gray-600 text-[1rem]">Select a project</span>
+        )}
+      </div>
+
+      {/* Dropdown with badges */}
+      {isDropdownOpen2 && (
+        <div className="absolute bg-white border rounded-md mt-2 w-full z-10 shadow-lg">
+          <div className="border-b-2">
+            <h1 className="text-gray-500 text-sm ml-2">To-do</h1>
+            <div
+              onClick={() => handleBadgeClick2("BackLog", "gray")}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+            >
+              <Badge color="gray" className="rounded-2xl w-[55%]">BackLog</Badge>
+            </div>
+          </div>
+          <div className="border-b-2">
+            <h1 className="text-gray-500 text-sm ml-2 mt-2">In Progress</h1>
+            <div
+              onClick={() => handleBadgeClick2("In Progress", "orange")}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+            >
+              <Badge color="orange" className="bg-orange-300 text-gray-700 rounded-2xl w-[55%]">
+                In Progress
+              </Badge>
+            </div>
+            <div
+              onClick={() => handleBadgeClick2("Amendments", "purple")}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+            >
+              <Badge className="bg-purple-300 text-gray-700 rounded-2xl w-[55%]">
+                Amendments
+              </Badge>
+            </div>
+            <div
+              onClick={() => handleBadgeClick2("Clients feedback", "blue")}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+            >
+              <Badge className="bg-blue-400 text-gray-700 rounded-2xl w-[70%]">
+                Clients feedback
+              </Badge>
+            </div>
+          </div>
+          <div className="border-b-2">
+            <h1 className="text-gray-500 text-sm ml-2 mt-3">Complete</h1>
+            <div
+              onClick={() => handleBadgeClick2("QA Ready", "blue")}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+            >
+              <Badge className="bg-blue-300 text-gray-700 rounded-2xl w-[55%]">
+                QA Ready
+              </Badge>
+            </div>
+            <div
+              onClick={() => handleBadgeClick2("QA Approved", "blue")}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+            >
+              <Badge className="bg-blue-300 text-gray-700 rounded-2xl w-[55%]">
+                QA Approved
+              </Badge>
+            </div>
+            <div
+              onClick={() => handleBadgeClick2("Complete", "green")}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+            >
+              <Badge className="bg-green-300 text-gray-700 rounded-2xl w-[55%]">
+                Complete
+              </Badge>
+            </div>
+            <div
+              onClick={() => handleBadgeClick2("Cancelled", "red")}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+            >
+              <Badge className="bg-red-300 text-gray-700 rounded-2xl w-[55%]">
+                Cancelled
+              </Badge>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+                </div>
+                <div className="flex ml-9 gap-10">
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {" "}
+                    {/* Align icon and text horizontally */}
+                    <CgPlayButtonO className="text-gray-600 mr-2" />{" "}
+                    {/* Add margin to the right of the icon */}
+                    <span className="text-gray-600 ">Priority</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Medium"
+                    className=" text-black text-[1rem] pl-3 h-7 bg-white-100 border hover:bg-gray-300 border-white rounded-md focus:bg-white focus:border-white focus:outline-none cursor-pointer  focus:shadow-lg"
+                  />
+                </div>
+                <div className="flex ml-9 gap-10">
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {" "}
+                    {/* Align icon and text horizontally */}
+                    <FaUserFriends className="text-gray-600 mr-2" />{" "}
+                    {/* Add margin to the right of the icon */}
+                    <span className="text-gray-600 ">Assigned to</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Uzair"
+                    className=" text-black text-[1rem] pl-3 h-7 bg-white-100 border hover:bg-gray-300 border-white rounded-md focus:bg-white focus:border-white focus:outline-none cursor-pointer  focus:shadow-lg"
+                  />
+                </div>
+                <div className="flex ml-9 gap-10">
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {/* Calendar Icon and "Deadline" Text */}
+                    <IoCalendarOutline className="text-gray-600 mr-2" />
+                    <span className="text-gray-600">Deadline</span>
+                  </div>
+
+                  {/* DatePicker Input */}
+                  <DatePicker
+                    selected={selectedDate} // Pass the selected date
+                    onChange={(date) => setSelectedDate(date)} // Handle date change
+                    placeholderText="Select a date" // Placeholder text
+                    className="text-black text-[1rem] pl-3 h-7 bg-white-100  hover:bg-gray-300 border-gray-300 rounded-md focus:bg-white focus:border-blue-500 focus:outline-none cursor-pointer focus:shadow-lg"
+                    dateFormat="MMMM d, yyyy" // Format for displaying the date
+                    isClearable={true} // Allow clearing the date
+                    onClick={(e) => e.stopPropagation()} // Prevent DatePicker from closing when clicking inside
+                  />
+                </div>
+                <div className="flex ml-9 gap-10">
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {" "}
+                    {/* Align icon and text horizontally */}
+                    <FaUserFriends className="text-gray-600 mr-2" />{" "}
+                    {/* Add margin to the right of the icon */}
+                    <span className="text-gray-600 ">Team Lead</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Siraj"
+                    className=" text-black text-[1rem] pl-3 h-8 bg-white-100 border hover:bg-gray-300 border-white rounded-md focus:bg-white focus:border-white focus:outline-none cursor-pointer  focus:shadow-lg"
+                  />
+                </div>
+                <div className="flex ml-9 gap-10">
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {" "}
+                    {/* Align icon and text horizontally */}
+                    <FaUserFriends className="text-gray-600 mr-2" />{" "}
+                    {/* Add margin to the right of the icon */}
+                    <span className="text-gray-600 ">Graphics By</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Siraj"
+                    className=" text-black text-[1rem] pl-3 h-8 bg-white-100 border hover:bg-gray-300 border-white rounded-md focus:bg-white focus:border-white focus:outline-none cursor-pointer  focus:shadow-lg"
+                  />
+                </div>
+                <div className="flex ml-9 gap-10">
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {" "}
+                    {/* Align icon and text horizontally */}
+                    <FaUserFriends className="text-gray-600 mr-2" />{" "}
+                    {/* Add margin to the right of the icon */}
+                    <span className="text-gray-600 ">QA By</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Siraj"
+                    className=" text-black text-[1rem] pl-3 h-8 bg-white-100 border hover:bg-gray-300 border-white rounded-md focus:bg-white focus:border-white focus:outline-none cursor-pointer  focus:shadow-lg"
+                  />
+                </div>
+                <div className="flex ml-9 gap-10">
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {" "}
+                    {/* Align icon and text horizontally */}
+                    <FaUserFriends className="text-gray-600 mr-2" />{" "}
+                    {/* Add margin to the right of the icon */}
+                    <span className="text-gray-600 ">Client</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Siraj"
+                    className=" text-black text-[1rem] pl-3 h-8 bg-white-100 border hover:bg-gray-300 border-white rounded-md focus:bg-white focus:border-white focus:outline-none cursor-pointer  focus:shadow-lg"
+                  />
+                </div>
+                <div className="flex ml-9 gap-10">
+                  <div className="flex items-center hover:bg-gray-300 cursor-pointer p-1 rounded w-[30%]">
+                    {" "}
+                    {/* Align icon and text horizontally */}
+                    <IoIosLink className="text-gray-600 mr-2" />{" "}
+                    {/* Add margin to the right of the icon */}
+                    <span className="text-gray-600 ">Figma</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="empty"
+                    className=" text-black text-[1rem] pl-2 h-7 bg-white-100 border hover:bg-gray-300 border-white rounded-md focus:bg-white focus:border-white focus:outline-none cursor-pointer  focus:shadow-lg"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <button className="bg-white text-green-800 border-green-600 px-4 py-2 rounded-3xl mt-3 hover:bg-gray-400">
             Import Data
           </button>
@@ -150,9 +536,6 @@ const Management = () => {
           <div className="bg-gray-200 ml-2 border rounded-lg p-2">
             <div className="flex items-center justify-between gap-[230px]">
               <h1 className="text-black">Team Collaboration</h1>
-              <button className="bg-white text-green-900 text-xs px-2 py-2 rounded-full flex items-center hover:bg-gray-400 border-2 border-green-900">
-                <FaPlus className="mr-2" /> Add Member
-              </button>
             </div>
 
             <div
@@ -349,10 +732,6 @@ const Management = () => {
           <div className="bg-gray-200 border rounded-2xl w-[23.5%] mb-2">
             <div className="flex items-center justify-between mt-2">
               <h1 className="text-black font-bold ml-2">Projects</h1>
-              <button className="bg-gray-200 text-green-900 text-sm px-4 py-2 mr-2 rounded-full flex items-center hover:bg-gray-400 border-2 border-green-900">
-                <FaPlus className="mr-2" />
-                New
-              </button>
             </div>
             <div
               className="max-h-60 overflow-y-auto mt-3"

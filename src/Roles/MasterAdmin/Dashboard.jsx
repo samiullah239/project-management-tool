@@ -23,6 +23,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { useEffect } from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
@@ -39,6 +40,84 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [rolesDropdownOpen, setRolesDropdownOpen] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [employeeCounts, setEmployeeCounts] = useState({
+    onsite: 0,
+    remote: 0,
+    resigned: 0,
+    removed: 0,
+    total: 0,
+  });
+  const employeesPerPage = 5;
+  const indexOfLastEmployee = currentPage * employeesPerPage;
+  const indexOfFirstEmployee = indexOfLastEmployee - employeesPerPage;
+  const currentEmployees = employees.slice(
+    indexOfFirstEmployee,
+    indexOfLastEmployee
+  );
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const nextPage = () => {
+    if (currentPage < Math.ceil(employees.length / employeesPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/employee/getEmployee"
+        );
+        console.log("Response:", response); // Log the raw response object
+        if (!response.ok) {
+          throw new Error("Failed to fetch employees");
+        }
+        const data = await response.json();
+        console.log("Fetched Data:", data); // Log the parsed data from the response
+        setEmployees(data); // Assuming data is an array of employees
+      } catch (err) {
+        setError("Error fetching employee data");
+        console.error("Error fetching employees:", err); // Log the error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+
+  useEffect(() => {
+    const fetchEmployeeCounts = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/employee/employeeCountsByStatus"
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch employee counts");
+        }
+        const data = await response.json();
+        setEmployeeCounts(data); // Update the state with the fetched counts
+      } catch (error) {
+        console.error("Error fetching employee counts:", error);
+      }
+    };
+
+    fetchEmployeeCounts();
+  }, []);
+
   const data = {
     labels: [
       "May 2024",
@@ -139,8 +218,6 @@ const Dashboard = () => {
     },
   };
 
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
-  const [rolesDropdownOpen, setRolesDropdownOpen] = useState(false);
   return (
     <div className="dashboard-content mt-3">
       <div className="px-3">
@@ -157,7 +234,9 @@ const Dashboard = () => {
             <h3 className="text-sm text-black flex items-center">
               <FaUser className="mr-2" /> Total Employees
             </h3>
-            <span className="text-2xl text-black mt-2 ml-5">150</span>
+            <span className="text-2xl text-black mt-2 ml-5">
+              {employeeCounts.total}
+            </span>
           </div>
 
           {/* Resigned Employees Section */}
@@ -166,7 +245,9 @@ const Dashboard = () => {
               {" "}
               <FaUsersSlash className="mr-2" /> Resigned Employees
             </h3>
-            <span className="text-2xl text-black mt-2  ml-5">20</span>
+            <span className="text-2xl text-black mt-2  ml-5">
+              {employeeCounts.resigned}
+            </span>
           </div>
 
           {/* Onsite Employees Section */}
@@ -175,7 +256,9 @@ const Dashboard = () => {
               <FaUsersCog className="mr-2" />
               Onsite Employees
             </h3>
-            <span className="text-2xl text-black mt-2  ml-5">30</span>
+            <span className="text-2xl text-black mt-2  ml-5">
+              {employeeCounts.onsite}
+            </span>
           </div>
 
           {/* Remote Employees Section */}
@@ -184,7 +267,9 @@ const Dashboard = () => {
               <FaHouseUser className="mr-2" />
               Remote Employees
             </h3>
-            <span className="text-2xl text-black mt-2 ml-5">30</span>
+            <span className="text-2xl text-black mt-2 ml-5">
+              {employeeCounts.remote}
+            </span>
           </div>
         </div>
       </div>
@@ -233,120 +318,7 @@ const Dashboard = () => {
               </div> */}
               </div>
 
-              {/* Dropdowns & Export Button */}
               <div className="flex items-center space-x-4">
-                {/* Status Dropdown */}
-                <div className="relative">
-                  <button
-                    onMouseEnter={() => setStatusDropdownOpen(true)}
-                    onMouseLeave={() => setStatusDropdownOpen(false)}
-                    className="text-white bg-gray-400 hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-                  >
-                    Status
-                    <svg
-                      className="w-2.5 h-2.5 ms-3"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 10 6"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="m1 1 4 4 4-4"
-                      />
-                    </svg>
-                  </button>
-                  {statusDropdownOpen && (
-                    <div className="z-10 absolute mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-                      <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-                        <li>
-                          <a
-                            href="#"
-                            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            Active
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="#"
-                            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            Inactive
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="#"
-                            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            Suspended
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                {/* Roles Dropdown */}
-                <div className="relative">
-                  <button
-                    onMouseEnter={() => setRolesDropdownOpen(true)}
-                    onMouseLeave={() => setRolesDropdownOpen(false)}
-                    className="text-white bg-gray-400 hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  >
-                    Roles
-                    <svg
-                      className="w-2.5 h-2.5 ms-3"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 10 6"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="m1 1 4 4 4-4"
-                      />
-                    </svg>
-                  </button>
-                  {rolesDropdownOpen && (
-                    <div className="z-10 absolute mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-                      <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-                        <li>
-                          <a
-                            href="#"
-                            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            Admin
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="#"
-                            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            Manager
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="#"
-                            className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            Employee
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
                 {/* Export Button */}
                 <Link to="/add-employee">
                   <button className="bg-gray-400 hover:bg-gray-600 text-white p-2 rounded-lg">
@@ -366,50 +338,68 @@ const Dashboard = () => {
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Department</th>
                     <th className="px-4 py-3">Role</th>
-                    {/* <th className="px-4 py-3">Total Salary</th> */}
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Sample Employee Data */}
-                  <tr>
-                    <td className="px-4 py-2">001</td>
-                    <td className="px-4 py-2 flex items-center">
-                      {/* <img
-              src="https://randomuser.me/api/portraits/men/32.jpg" // This is a sample profile image URL
-              alt="Profile"
-              className="w-10 h-10 rounded-full border-2 border-gray-300 dark:border-gray-600"
-            /> */}
-                      John Doe
-                    </td>
-                    <td className="px-4 py-2">john.doe@example.com</td>
-                    <td className="px-4 py-2">Marketing</td>
-                    <td className="px-4 py-2">Manager</td>
-                    {/* <td className="px-4 py-2">$50,000</td> */}
-                    <td className="px-4 py-2 text-green-400">Active</td>
-                    <td className="px-4 py-2">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          className="w-6 h-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 9l6 6 6-6"
-                          />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                  {/* Other Employee Rows can go here */}
+                  {currentEmployees.map((employee) => (
+                    <tr key={employee._id}>
+                      <td className="px-4 py-2">{employee._id}</td>
+                      <td className="px-4 py-2">{employee.name}</td>
+                      <td className="px-4 py-2">{employee.email}</td>
+                      <td className="px-4 py-2">{employee.department}</td>
+                      <td className="px-4 py-2">{employee.designation}</td>
+                      <td className="px-4 py-2 text-green-400">
+                        {employee.status}
+                      </td>
+                      <td className="px-4 py-2">
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            className="w-6 h-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M6 9l6 6 6-6"
+                            />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={prevPage}
+                className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500"
+              >
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              <div className="pagination-numbers">
+                <span>
+                  Page {currentPage} of{" "}
+                  {Math.ceil(employees.length / employeesPerPage)}
+                </span>
+              </div>
+
+              <button
+                onClick={nextPage}
+                className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500"
+              >
+                Next
+              </button>
             </div>
           </div>
         </div>

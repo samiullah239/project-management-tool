@@ -2,49 +2,49 @@ import React, { useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend"; // Import HTML5 backend
-import { DndProvider } from "react-dnd"; // Import DndProvider
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd";
 
 const ImageItem = ({ image, index, moveImage, handleRemoveImage }) => {
-    const [, drag] = useDrag({
-      type: "IMAGE",
-      item: { index },
-    });
-  
-    const [, drop] = useDrop({
-      accept: "IMAGE",
-      hover: (item) => {
-        if (item.index !== index) {
-          moveImage(item.index, index);
-          item.index = index;
-        }
-      },
-    });
-  
-    return (
-      <div
-        ref={(node) => drag(drop(node))}
-        className="flex items-center mb-4 cursor-move"
-      >
-        <img
-          src={image}
-          alt={`Preview ${index}`}
-          className="border border-gray-300 w-14 h-14 object-cover"
-        />
-        <div className="ml-4 flex flex-1 items-center">
-          <p className="text-sm text-gray-700 flex-1">Image {index + 1}</p>
-          <button
-            type="button"
-            onClick={() => handleRemoveImage(index)}
-            className="text-red-500 hover:text-red-700 text-sm ml-4"
-          >
-            <FaTrash />
-          </button>
-        </div>
+  const [, drag] = useDrag({
+    type: "IMAGE",
+    item: { index },
+  });
+
+  const [, drop] = useDrop({
+    accept: "IMAGE",
+    hover: (item) => {
+      if (item.index !== index) {
+        moveImage(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+
+  return (
+    <div
+      ref={(node) => drag(drop(node))}
+      className="flex items-center mb-4 cursor-move"
+    >
+      <img
+        src={image}
+        alt={`Preview ${index}`}
+        className="border border-gray-300 w-14 h-14 object-cover"
+      />
+      <div className="ml-4 flex flex-1 items-center">
+        <p className="text-sm text-gray-700 flex-1">Image {index + 1}</p>
+        <button
+          type="button"
+          onClick={() => handleRemoveImage(index)}
+          className="text-red-500 hover:text-red-700 text-sm ml-4"
+        >
+          <FaTrash />
+        </button>
       </div>
-    );
-  };
-  
+    </div>
+  );
+};
+
 const AddEmployee = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -55,12 +55,14 @@ const AddEmployee = () => {
     joiningDate: "",
     birthDate: "",
     age: "",
-    salary: 0,
+    salaryBeforeProbation: "",
+    salaryAfterProbation: "",
+    score: "",
+    cnic: "",
     address: "",
-    status: "", // Default status
+    status: "OnSite", // Default status
   });
-  const [imagePreviews, setImagePreviews] = useState([]); // Keep previews here
-
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [images, setImages] = useState([]);
@@ -75,25 +77,20 @@ const AddEmployee = () => {
     }));
   };
 
-
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files || []); // Ensure files is an array
-    const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+    const files = Array.from(e.target.files || []);
+    const maxSize = 50 * 1024 * 1024;
     let validImages = [];
     let invalidImages = [];
 
-    // Validate selected images
     files.forEach((file) => {
       if (file.size > maxSize) {
-        // If file size exceeds 50MB, add it to the invalidImages array
         invalidImages.push(file);
       } else {
-        // Otherwise, add to the validImages array
         validImages.push(file);
       }
     });
 
-    // If there are any invalid images, show an error message
     if (invalidImages.length > 0) {
       setError(
         `The following images exceed the 50MB size limit: ${invalidImages
@@ -101,18 +98,17 @@ const AddEmployee = () => {
           .join(", ")}`
       );
     } else {
-      setError(""); // Clear any previous error
+      setError("");
     }
 
-    // Add only valid images to the state
     setImages((prevImages) => [...prevImages, ...validImages]);
 
-    // Create image previews
     const newImagePreviews = validImages.map((file) =>
       URL.createObjectURL(file)
     );
     setImagePreviews((prevPreviews) => [...prevPreviews, ...newImagePreviews]);
   };
+
   const moveImage = (fromIndex, toIndex) => {
     const updatedImages = [...images];
     const [movedImage] = updatedImages.splice(fromIndex, 1);
@@ -125,7 +121,6 @@ const AddEmployee = () => {
     setImagePreviews(updatedPreviews);
   };
 
-  // Handle image removal
   const handleRemoveImage = (index) => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
     setImagePreviews((prevPreviews) =>
@@ -133,15 +128,13 @@ const AddEmployee = () => {
     );
   };
 
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const response = await fetch(
-        "https://inventory-app-b.vercel.app/product/postemployee",
+        "http://localhost:8080/employee/addEmployee",
         {
           method: "POST",
           headers: {
@@ -159,11 +152,10 @@ const AddEmployee = () => {
         return;
       }
 
-      const result = await response.json();
-      alert("Employee added successfully!");
-      navigate("/hr");
+      alert("Employee Added successfully");
+      navigate("/hr/dashboard");
     } catch (error) {
-      setError("An error occurred while adding the employee.");
+      setError("An error occurred while adding the employe.");
       setTimeout(() => setError(""), 3000);
     } finally {
       setLoading(false);
@@ -188,7 +180,7 @@ const AddEmployee = () => {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               placeholder="Enter employee's name"
               required
             />
@@ -196,15 +188,13 @@ const AddEmployee = () => {
 
           {/* Email Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Email
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300  rounded-md text-sm mb-2"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               placeholder="Enter employee's email"
               required
             />
@@ -212,15 +202,13 @@ const AddEmployee = () => {
 
           {/* Phone Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Phone
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Phone</label>
             <input
               type="text"
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               placeholder="Enter phone number"
               required
             />
@@ -228,15 +216,13 @@ const AddEmployee = () => {
 
           {/* Designation Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Designation
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Designation</label>
             <input
               type="text"
               name="designation"
               value={formData.designation}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               placeholder="Enter designation"
               required
             />
@@ -244,15 +230,13 @@ const AddEmployee = () => {
 
           {/* Department Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Department
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Department</label>
             <input
               type="text"
               name="department"
               value={formData.department}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               placeholder="Enter department"
               required
             />
@@ -260,148 +244,129 @@ const AddEmployee = () => {
 
           {/* Joining Date Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Joining Date
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Joining Date</label>
             <input
               type="date"
               name="joiningDate"
               value={formData.joiningDate}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               required
             />
           </div>
 
           {/* Age Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500  font-bold mb-1">Age</label>
+            <label className="form-label text-gray-500 font-bold mb-1">Age</label>
             <input
               type="number"
               name="age"
               value={formData.age}
               onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               placeholder="Enter age"
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
               required
             />
           </div>
 
           {/* Birth Date Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500  font-bold mb-1">
-              Birth Date
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Birth Date</label>
             <input
               type="date"
               name="birthDate"
               value={formData.birthDate}
               onChange={handleInputChange}
-              placeholder="Enter birth date"
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               required
             />
           </div>
 
-          {/* Salary before probation Field */}
+          {/* Salary Before Probation Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Salary Before Probation
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Salary Before Probation</label>
             <input
               type="number"
-              name="salary"
-              // value={formData.salary}
+              name="salaryBeforeProbation"
+              value={formData.salaryBeforeProbation}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
-              placeholder="Enter salary Before Probation"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
+              placeholder="Enter salary before probation"
               required
             />
           </div>
 
-          {/* Salary before probation Field */}
+          {/* Salary After Probation Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Salary After Probation
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Salary After Probation</label>
             <input
               type="number"
-              name="salary"
-              // value={formData.salary}
+              name="salaryAfterProbation"
+              value={formData.salaryAfterProbation}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
-              placeholder="Enter salary After Probation"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
+              placeholder="Enter salary after probation"
               required
             />
           </div>
 
-          {/* Add Score Field */}
+          {/* Score Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Add Score
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Score</label>
             <input
               type="number"
-              name="Score"
-              // value={formData.salary}
+              name="score"
+              value={formData.score}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
-              placeholder="Enter Score"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
+              placeholder="Enter score"
               required
             />
           </div>
 
- {/* Add CNIC Field */}
- <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              CNIC
-            </label>
+          {/* CNIC Field */}
+          <div className="form-group mb-4">
+            <label className="form-label text-gray-500 font-bold mb-1">CNIC</label>
             <input
-              type="number"
-              name="CNIC"
-              // value={formData.salary}
+              type="text"
+              name="cnic"
+              value={formData.cnic}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2"
-              placeholder="00000-0000000-0"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
+              placeholder="Enter CNIC"
               required
             />
           </div>
-
 
           {/* Address Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Address
-            </label>
-            <textarea
+            <label className="form-label text-gray-500 font-bold mb-1">Address</label>
+            <input
+              type="text"
               name="address"
               value={formData.address}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300  rounded-md text-sm mb-2 bg-[#242b37] text-white"
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
               placeholder="Enter address"
               required
-            ></textarea>
+            />
           </div>
 
           {/* Status Field */}
           <div className="form-group mb-4">
-            <label className="form-label text-gray-500 font-bold mb-1">
-              Status
-            </label>
+            <label className="form-label text-gray-500 font-bold mb-1">Status</label>
             <select
               name="status"
               value={formData.status}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 bg-gray-300 rounded-md text-sm mb-2 bg-[#242b37] text-white"
-              required
+              className="w-full p-2 border border-gray-300 text-black bg-gray-300 rounded-md text-sm mb-2"
             >
-              <option value="OnSite">OnSite</option>
+              <option value="OnSite">On Site</option>
               <option value="Remote">Remote</option>
               <option value="Resigned">Resigned</option>
             </select>
           </div>
 
-          {/* Submit Button */}
           <div className="form-buttons flex justify-between">
             <button
               type="submit"
@@ -415,21 +380,15 @@ const AddEmployee = () => {
       </div>
 
       <div>
-        {" "}
         <DndProvider backend={HTML5Backend}>
-        {/* Wrap your app with DndProvider */}
-        <div className="lg:w-[700px] mt-5">
-      <div className="mt-5 mx-3 bg-gray-200 p-6 border border-grey-200 shadow-md">
-        <h2 className="text-2xl font-semibold text-black mb-4">Upload pictures</h2>
-        <p className="text-gray-600 mb-4">
-          Upload an image. Recommended size: 2048x1024 and less than 50MB.
-        </p>
+          <div className="lg:w-[700px] mt-5">
+            <div className="mt-5 mx-3 bg-gray-200 p-6 border border-grey-200 shadow-md">
+              <h2 className="text-2xl font-semibold text-black mb-4">Upload pictures</h2>
+              <p className="text-gray-600 mb-4">
+                Upload an image. Recommended size: 2048x1024 and less than 50MB.
+              </p>
 
-        {/* Display error if any */}
-        {error && <div className="text-red-500">{error}</div>}
-
-        {/* Image Preview */}
-        {imagePreviews.length > 0 ? (
+              {imagePreviews.length > 0 ? (
                 imagePreviews.map((image, index) => (
                   <ImageItem
                     key={index}
@@ -439,35 +398,35 @@ const AddEmployee = () => {
                     handleRemoveImage={handleRemoveImage}
                   />
                 ))
-        ) : (
-          <div className="flex items-center mb-4">
-            <img
-              src="https://sp-seller.webkul.com/img/No-Image/No-Image-140x140.png"
-              alt="Preview"
-              className="border border-gray-300 w-24 h-24 object-cover"
-            />
-            <div className="ml-4 flex flex-1 items-center">
-              <p className="text-sm text-gray-700 flex-1">No images uploaded</p>
+              ) : (
+                <div className="flex items-center mb-4">
+                  <img
+                    src="https://sp-seller.webkul.com/img/No-Image/No-Image-140x140.png"
+                    alt="Preview"
+                    className="border border-gray-300 w-24 h-24 object-cover"
+                  />
+                  <div className="ml-4 flex flex-1 items-center">
+                    <p className="text-sm text-gray-700 flex-1">No images uploaded</p>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={() => document.getElementById("images").click()}
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded"
+              >
+                Upload Image
+              </button>
+              <input
+                type="file"
+                id="images"
+                onChange={handleImageChange}
+                multiple
+                className="hidden"
+              />
             </div>
           </div>
-        )}
-
-        <button
-          onClick={() => document.getElementById("images").click()}
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded"
-        >
-          Upload Image
-        </button>
-        <input
-          type="file"
-          id="images"
-          onChange={handleImageChange}
-          multiple
-          className="hidden"
-        />
-      </div>
-    </div>
-    </DndProvider>
+        </DndProvider>
       </div>
     </div>
   );
